@@ -1,0 +1,2 @@
+fastapi[all]==0.38.1
+aio-pika==6.1.1
