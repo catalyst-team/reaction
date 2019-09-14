@@ -1,3 +1,6 @@
+# reaction
+
+* `cd example && docker-compose up --force-recreate --build`
 * RabbitMQ web ui: http://127.0.0.1:15672/#/
   * user: admin
   * password: j8XfG9ZDT5ZZrWTzw62q
