@@ -1,8 +1,27 @@
-import inspect
+import functools
 import pickle
 from abc import ABC, abstractmethod
 
 from .common import RPCHandler, RPCRequest, RPCResponse
+
+
+class FunctionOrMethod:
+    def __init__(self, func, **attrs):
+        self._func = func
+        self._attrs = attrs
+        self._method = False
+
+    def __getattr__(self, item):
+        return self._attrs.get(item)
+
+    def __get__(self, instance, owner):
+        if not self._method:
+            self._func = functools.partial(self._func, instance)
+            self._method = True
+        return self
+
+    def __call__(self, *args, **kwargs):
+        return self._func(*args, **kwargs)
 
 
 class BaseRPC(ABC):
@@ -30,15 +49,12 @@ class BaseRPC(ABC):
     async def call(self, msg: RPCRequest) -> RPCResponse:
         pass
 
-    def _bind(self, instance):
-        self._instance = instance
-        return self._handler
-
     def __call__(self, handler: RPCHandler) -> RPCHandler:
-        self._handler = handler
         if self._name is None:
             self._name = handler.__name__
-        handler.consume = self.consume
-        handler.call = self.call
-        handler.bind = self._bind
-        return handler
+        self._handler = FunctionOrMethod(
+            handler,
+            consume=self.consume,
+            call=self.call,
+        )
+        return self._handler

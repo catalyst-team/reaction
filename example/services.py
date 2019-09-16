@@ -30,33 +30,39 @@ async def square(*values) -> List[float]:
 
 
 class SimpleModel:
-    def load(self, path='model'):
+    def __init__(self):
+        self.model = None
+        self.class2tag = None
+        self.tag2class = None
+
+    def load(self, path='/model'):
         self.model = torch.jit.load(os.path.join(path, 'model.pth'))
         with open(os.path.join(path, 'tag2class.json')) as fin:
             self.tag2class = json.load(fin)
             self.class2tag = {v: k for k, v in self.tag2class.items()}
-            logging.info(f'class2tag: {self.class2tag}')
+            logging.debug(f'class2tag: {self.class2tag}')
 
-    @RPC(rpc_uri, name='simple_model')
+    @RPC(rpc_uri, name='simple_model', pool_size=1, batch_size=4)
     def predict(self, *imgs) -> List[str]:
+        logging.debug(f'batch size: {len(imgs)}')
+        transofrm = Compose([
+            LongestMaxSize(max_size=224),
+            PadIfNeeded(224, 224, border_mode=cv2.BORDER_CONSTANT),
+            Normalize(),
+            ToTensor(),
+        ])
+
+        input_ts = [transofrm(image=img)["image"] for img in imgs]
+        logging.debug(f'input_ts: {input_ts}')
+        input_t = torch.stack(input_ts)
+        logging.debug(f'input_t: {input_t.shape}')
+        output_ts = self.model(input_t)
+        logging.debug(f'output_ts: {output_ts.shape}')
+
         res = []
-        for img in imgs:
-            logging.info(f'image: {img.shape}')
-
-            transofrm = Compose([
-                LongestMaxSize(max_size=224),
-                PadIfNeeded(224, 224, border_mode=cv2.BORDER_CONSTANT),
-                Normalize(),
-                ToTensor()
-            ])
-
-            input_t = transofrm(image=img)["image"].unsqueeze_(0)
-            logging.info(f'input_t: {input_t.shape}')
-            output_t = self.model(input_t).squeeze_(0)
-            logging.info(f'output_t: {output_t.shape}')
-
+        for output_t in output_ts:
             tag = self.class2tag[output_t.argmax().item()]
-            logging.info(f'result: {tag}')
+            logging.debug(f'result: {tag}')
             res.append(tag)
         return res
 
@@ -67,8 +73,8 @@ if __name__ == '__main__':
     loop.create_task(recognize.consume())
     loop.create_task(recognize_passport.consume())
 
-    # m = SimpleModel()
-    # m.load()
-    # loop.create_task(m.predict.bind(m).consume())
+    m = SimpleModel()
+    m.load()
+    loop.create_task(m.predict.consume())
 
     loop.run_forever()

@@ -24,7 +24,6 @@ class RPC(BaseRPC):
             max_jobs: int = 0,
             loop: asyncio.AbstractEventLoop = None,
     ):
-        self._instance = None
         self._loop = loop
         self._url = url
         self._name = name
@@ -70,12 +69,8 @@ class RPC(BaseRPC):
                 logging.debug(f'message: correlation_id={m.correlation_id}')
                 req: RPCRequest = self.decode_request(m.body)
                 reqs.append(req)
-            logging.debug(f'instance: {self._instance}')
             logging.debug(f'handler: {self._handler}')
-            if self._instance is None:
-                results = self._handler(*reqs)
-            else:
-                results = self._handler(self._instance, *reqs)
+            results = self._handler(*reqs)
             if inspect.isawaitable(results):
                 results = await results
         except (KeyboardInterrupt, asyncio.CancelledError):
