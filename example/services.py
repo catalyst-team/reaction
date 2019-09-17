@@ -23,7 +23,7 @@ def recognize_passport(*imgs) -> List[Any]:
     return [i.shape[0] / i.shape[1] for i in imgs]
 
 
-@RPC(rpc_uri, timeout=3)
+@RPC(rpc_uri)
 async def square(*values) -> List[float]:
     await asyncio.sleep(1)
     return [v ** 2 for v in values]

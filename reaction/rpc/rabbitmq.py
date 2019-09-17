@@ -57,10 +57,18 @@ class RPC(BaseRPC):
             else:
                 while (bs <= 0 or len(batch) < bs) and not q.empty():
                     batch.append(q.get_nowait())
-            await self._process_batch(batch)
+            await asyncio.wait_for(
+                self._process_batch(batch),
+                self._timeout,
+                loop=self._loop,
+            )
 
     async def _process_single(self, message: aio_pika.IncomingMessage):
-        return await self._process_batch([message])
+        return await asyncio.wait_for(
+            self._process_batch([message]),
+            self._timeout,
+            loop=self._loop,
+        )
 
     async def _process_batch(self, messages: List[aio_pika.IncomingMessage]):
         try:
@@ -73,7 +81,7 @@ class RPC(BaseRPC):
             results = self._handler(*reqs)
             if inspect.isawaitable(results):
                 results = await results
-        except (KeyboardInterrupt, asyncio.CancelledError):
+        except KeyboardInterrupt:
             self._consuming = False
             for m in messages:
                 await m.reject(requeue=True)
@@ -85,7 +93,11 @@ class RPC(BaseRPC):
                 await messages[0].reject()
             else:
                 for m in messages:
-                    await self._process_batch([m])
+                    await asyncio.wait_for(
+                        self._process_batch([m]),
+                        self._timeout,
+                        loop=self._loop,
+                    )
                 return
 
         for message, result in zip(messages, results):
@@ -125,6 +137,13 @@ class RPC(BaseRPC):
         return self._mconn
 
     async def call(self, msg: RPCRequest) -> RPCResponse:
+        return await asyncio.wait_for(
+            self._call(msg),
+            self._timeout,
+            loop=self._loop,
+        )
+
+    async def _call(self, msg: RPCRequest) -> RPCResponse:
         if not self._mconn:
             self._mconn = await aio_pika.connect_robust(
                 self._url, loop=self._loop)
@@ -142,7 +161,7 @@ class RPC(BaseRPC):
                 message,
                 routing_key=self._name,
             )
-            async with mq.iterator(no_ack=True, timeout=self._timeout) as it:
+            async with mq.iterator(no_ack=True) as it:
                 async for message in it:
                     break
             if message.correlation_id != correlation_id:
