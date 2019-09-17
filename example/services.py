@@ -14,45 +14,40 @@ from reaction.rpc import RabbitRPC as RPC
 
 
 @RPC(rpc_uri)
-def recognize(*imgs) -> List[Any]:
+def get_shape(*imgs) -> List[Any]:
     return [i.shape for i in imgs]
 
 
 @RPC(rpc_uri)
-def recognize_passport(*imgs) -> List[Any]:
-    return [i.shape[0] / i.shape[1] for i in imgs]
-
-
-@RPC(rpc_uri)
-async def square(*values) -> List[float]:
+async def get_square(*vals) -> List[float]:
     await asyncio.sleep(1)
-    return [v ** 2 for v in values]
+    return [(v * v) for v in vals]
 
 
-class SimpleModel:
+class ClassifyModel:
     def __init__(self):
         self.model = None
         self.class2tag = None
         self.tag2class = None
+        self.transform = None
 
     def load(self, path='/model'):
+		self.transform = Compose([
+            LongestMaxSize(max_size=224),
+            PadIfNeeded(224, 224, border_mode=cv2.BORDER_CONSTANT),
+            Normalize(),
+            ToTensor(),
+        ])
         self.model = torch.jit.load(os.path.join(path, 'model.pth'))
         with open(os.path.join(path, 'tag2class.json')) as fin:
             self.tag2class = json.load(fin)
             self.class2tag = {v: k for k, v in self.tag2class.items()}
             logging.debug(f'class2tag: {self.class2tag}')
 
-    @RPC(rpc_uri, name='simple_model', pool_size=1, batch_size=4)
+    @RPC(rpc_uri, name='classify', pool_size=1, batch_size=4)
     def predict(self, *imgs) -> List[str]:
         logging.debug(f'batch size: {len(imgs)}')
-        transofrm = Compose([
-            LongestMaxSize(max_size=224),
-            PadIfNeeded(224, 224, border_mode=cv2.BORDER_CONSTANT),
-            Normalize(),
-            ToTensor(),
-        ])
-
-        input_ts = [transofrm(image=img)["image"] for img in imgs]
+        input_ts = [self.transofrm(image=img)["image"] for img in imgs]
         logging.debug(f'input_ts: {input_ts}')
         input_t = torch.stack(input_ts)
         logging.debug(f'input_t: {input_t.shape}')
@@ -69,11 +64,11 @@ class SimpleModel:
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    loop.create_task(square.consume())
-    loop.create_task(recognize.consume())
-    loop.create_task(recognize_passport.consume())
+    
+    loop.create_task(get_shape.consume())
+    loop.create_task(get_square.consume())
 
-    m = SimpleModel()
+    m = ClassifyModel()
     m.load()
     loop.create_task(m.predict.consume())
 

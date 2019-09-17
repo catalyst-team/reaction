@@ -14,28 +14,19 @@ class SquareResult(BaseModel):
     result: float
 
 
-class DocType(Enum):
-    passport_main = "passport_main"
-    inn_person = "inn_person"
+class Orientation(Enum):
+    portrait = "portrait"
+    album = "album"
 
 
-class RecognizeResult(BaseModel):
-    doc_type: DocType
-    result: Tuple[int, int, int]
+class ImageResult(BaseModel):
+	label: str
+	square: int
+	orientation: Orientation
+    shape: Tuple[int, int]
 
 
-class RecognizePassportField(BaseModel):
-    text: str
-    confidence: float
-
-
-class RecognizePassportResult(BaseModel):
-    first_name: Optional[RecognizePassportField]
-    second_name: Optional[RecognizePassportField]
-    sex: Optional[RecognizePassportField]
-
-
-class SimpleModelResult(BaseModel):
+class ClassifyModelResult(BaseModel):
     tag: str
 
 
@@ -46,40 +37,25 @@ async def get_square(value: float):
     )
 
 
-@app.post("/recognize", response_model=RecognizeResult)
-async def recognize(
-        doc_type: DocType,
+@app.post("/image_info", response_model=ImageResult)
+async def get_image_info(
+        label: str,
         image: UploadFile = File(...),
 ):
     img = imageio.imread(await image.read())
-    return RecognizeResult(
-        doc_type=doc_type,
-        result=await services.recognize.call(img)
+    w, h = await services.get_shape.call(img)[:2]
+    o = orientation.album if w > h else Orientation.portrait
+    return ImageResult(
+        label=label,
+        square=w * h,
+        orientation=o,
+        shape=(w, h)
     )
 
 
-@app.post("/recognize/passport_main", response_model=RecognizePassportResult)
-async def recognize_passport(image: UploadFile = File(...)):
+@app.post("/classify", response_model=ClassifyModelResult)
+async def classify(image: UploadFile = File(...)):
     img = imageio.imread(await image.read())
-    return RecognizePassportResult(
-        first_name=RecognizePassportField(
-            text='qwe2',
-            confidence=await services.recognize_passport.call(img)
-        ),
-        second_name=RecognizePassportField(
-            text='qwe2',
-            confidence=await services.recognize_passport.call(img)
-        ),
-        sex=RecognizePassportField(
-            text='qwe2',
-            confidence=await services.recognize_passport.call(img)
-        ),
-    )
-
-
-@app.post("/recognize/simple_model", response_model=SimpleModelResult)
-async def recognize_simple_model(image: UploadFile = File(...)):
-    img = imageio.imread(await image.read())
-    return SimpleModelResult(
-        tag=await services.SimpleModel().predict.call(img),
+    return ClassifyModelResult(
+        tag=await services.ClassifyModel().predict.call(img),
     )
