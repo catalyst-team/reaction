@@ -17,7 +17,7 @@ class RPC(BaseRPC):
             url: str,
             name: str = None,
             handler: RPCHandler = None,
-            timeout: float = 30,
+            timeout: float = None,
             pool_size: int = 0,
             batch_size: int = 0,
             wait_for_batch: bool = False,
