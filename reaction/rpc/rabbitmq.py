@@ -111,6 +111,7 @@ class RPC(BaseRPC):
                 routing_key=message.reply_to,
                 mandatory=False,
             )
+            await message.ack()
 
     async def consume(self):
         while True:

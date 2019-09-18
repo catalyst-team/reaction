@@ -32,7 +32,7 @@ class ClassifyModel:
         self.transform = None
 
     def load(self, path='/model'):
-		self.transform = Compose([
+        self.transform = Compose([
             LongestMaxSize(max_size=224),
             PadIfNeeded(224, 224, border_mode=cv2.BORDER_CONSTANT),
             Normalize(),
@@ -47,8 +47,7 @@ class ClassifyModel:
     @RPC(rpc_uri, name='classify', pool_size=1, batch_size=4)
     def predict(self, *imgs) -> List[str]:
         logging.debug(f'batch size: {len(imgs)}')
-        input_ts = [self.transofrm(image=img)["image"] for img in imgs]
-        logging.debug(f'input_ts: {input_ts}')
+        input_ts = [self.transform(image=img)["image"] for img in imgs]
         input_t = torch.stack(input_ts)
         logging.debug(f'input_t: {input_t.shape}')
         output_ts = self.model(input_t)
@@ -64,7 +63,7 @@ class ClassifyModel:
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    
+
     loop.create_task(get_shape.consume())
     loop.create_task(get_square.consume())
 

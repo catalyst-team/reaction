@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Optional
 from typing import Tuple
 
 import imageio
@@ -20,9 +19,9 @@ class Orientation(Enum):
 
 
 class ImageResult(BaseModel):
-	label: str
-	square: int
-	orientation: Orientation
+    label: str
+    square: int
+    orientation: Orientation
     shape: Tuple[int, int]
 
 
@@ -33,7 +32,7 @@ class ClassifyModelResult(BaseModel):
 @app.get("/square/{value}", response_model=SquareResult)
 async def get_square(value: float):
     return SquareResult(
-        result=await services.square.call(value)
+        result=await services.get_square.call(value)
     )
 
 
@@ -43,8 +42,8 @@ async def get_image_info(
         image: UploadFile = File(...),
 ):
     img = imageio.imread(await image.read())
-    w, h = await services.get_shape.call(img)[:2]
-    o = orientation.album if w > h else Orientation.portrait
+    w, h = (await services.get_shape.call(img))[:2]
+    o = Orientation.album if w > h else Orientation.portrait
     return ImageResult(
         label=label,
         square=w * h,
