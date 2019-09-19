@@ -14,7 +14,7 @@ from .common import RPCHandler, RPCRequest, RPCResponse, RPCError
 class RPC(BaseRPC):
     def __init__(
             self,
-            url: str,
+            url: str = None,
             name: str = None,
             handler: RPCHandler = None,
             timeout: float = None,
@@ -25,7 +25,7 @@ class RPC(BaseRPC):
             loop: asyncio.AbstractEventLoop = None,
     ):
         self._loop = loop
-        self._url = url
+        self._url = url or self.URL
         self._name = name
         self._handler = handler
         self._timeout = timeout

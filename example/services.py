@@ -9,16 +9,15 @@ import torch
 from albumentations import Compose, Normalize, LongestMaxSize, PadIfNeeded
 from albumentations.torch import ToTensor
 
-from common import rpc_uri
-from reaction.rpc import RabbitRPC as RPC
+from common import rpc
 
 
-@RPC(rpc_uri)
+@rpc()
 def get_shape(*imgs) -> List[Any]:
     return [i.shape for i in imgs]
 
 
-@RPC(rpc_uri)
+@rpc()
 async def get_square(*vals) -> List[float]:
     await asyncio.sleep(1)
     return [(v * v) for v in vals]
@@ -44,7 +43,7 @@ class ClassifyModel:
             self.class2tag = {v: k for k, v in self.tag2class.items()}
             logging.debug(f'class2tag: {self.class2tag}')
 
-    @RPC(rpc_uri, name='classify', pool_size=1, batch_size=4)
+    @rpc(name='classify', pool_size=1, batch_size=4)
     def predict(self, *imgs) -> List[str]:
         logging.debug(f'batch size: {len(imgs)}')
         input_ts = [self.transform(image=img)["image"] for img in imgs]

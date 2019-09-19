@@ -6,17 +6,19 @@
 ```python
 import asyncio
 from typing import List, Any
-from reaction.rpc import RabbitRPC as RPC
-
-rpc_uri = 'amqp://user:password@host'
+from reaction.rpc import RabbitRPC
 
 
-@RPC(rpc_uri)
+class rpc(RabbitRPC):
+    URL = 'amqp://user:password@host'
+
+
+@rpc()
 def sync_square(*values) -> List[float]:
     return [v ** 2 for v in values]
 
 
-@RPC(rpc_uri)
+@rpc()
 async def async_square(*values) -> List[float]:
     await asyncio.sleep(1)
     return [v ** 2 for v in values]
