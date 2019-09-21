@@ -127,7 +127,7 @@ class RPC(BaseRPC):
 
         self._mch = await self._mconn.channel()
         await self._mch.set_qos(prefetch_count=self._max_jobs)
-        self._mq = await self._mch.declare_queue(self._name, durable=True)
+        self._mq = await self._mch.declare_queue(self._name)
         if self._pool_size > 0:
             await asyncio.gather(
                 self._run_pool(),
