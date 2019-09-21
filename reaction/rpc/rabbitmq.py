@@ -74,10 +74,10 @@ class RPC(BaseRPC):
         try:
             reqs = []
             for m in messages:
-                logging.debug(f'message: correlation_id={m.correlation_id}')
+                # logging.debug(f'message: correlation_id={m.correlation_id}')
                 req: RPCRequest = self.decode_request(m.body)
                 reqs.append(req)
-            logging.debug(f'handler: {self._handler}')
+            # logging.debug(f'handler: {self._handler}')
             results = self._handler(*reqs)
             if inspect.isawaitable(results):
                 results = await results
@@ -169,7 +169,7 @@ class RPC(BaseRPC):
             if message.correlation_id != correlation_id:
                 raise ValueError('wrong correlation_id')
             response: RPCResponse = self.decode_response(message.body)
-            logging.debug(f'response: {response}')
+            # logging.debug(f'response: {response}')
             if isinstance(response, RPCError):
                 response.reraise()
             return response
