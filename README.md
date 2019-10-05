@@ -7,7 +7,7 @@
 [![Slack](./pics/slack.svg)](https://opendatascience.slack.com/messages/CGK4KQBHD)
 [![Donate](https://raw.githubusercontent.com/catalyst-team/catalyst-pics/master/third_party_pics/patreon.png)](https://www.patreon.com/catalyst_team)
 
-**Reaction**
+**Reaction** is a framework for fast and convenient DL models serving.
 </div>
 
 
