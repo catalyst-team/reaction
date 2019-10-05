@@ -58,14 +58,20 @@ class RPC(BaseRPC):
                 while (bs <= 0 or len(batch) < bs) and not q.empty():
                     batch.append(q.get_nowait())
             await asyncio.wait_for(
-                self._process_batch(batch),
+                asyncio.ensure_future(
+                    self._process_batch(batch),
+                    loop=self._loop,
+                ),
                 self._timeout,
                 loop=self._loop,
             )
 
     async def _process_single(self, message: aio_pika.IncomingMessage):
         return await asyncio.wait_for(
-            self._process_batch([message]),
+            asyncio.ensure_future(
+                self._process_batch([message]),
+                loop=self._loop,
+            ),
             self._timeout,
             loop=self._loop,
         )
@@ -94,7 +100,10 @@ class RPC(BaseRPC):
             else:
                 for m in messages:
                     await asyncio.wait_for(
-                        self._process_batch([m]),
+                        asyncio.ensure_future(
+                            self._process_batch([m]),
+                            loop=self._loop,
+                        ),
                         self._timeout,
                         loop=self._loop,
                     )
@@ -140,7 +149,10 @@ class RPC(BaseRPC):
 
     async def call(self, msg: RPCRequest) -> RPCResponse:
         return await asyncio.wait_for(
-            self._call(msg),
+            asyncio.ensure_future(
+                self._call(msg),
+                loop=self._loop,
+            ),
             self._timeout,
             loop=self._loop,
         )
