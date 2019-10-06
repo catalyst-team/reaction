@@ -37,8 +37,16 @@ def read_config(filename: str):
         return os.getenv(name, default)
 
     def path_constructor(loader, node):
-        node.value = path_matcher.sub(repl, node.value)
-        return loader.construct_scalar(node)
+        val = path_matcher.sub(repl, node.value)
+        try:
+            return int(val)
+        except:
+            pass
+        try:
+            return float(val)
+        except:
+            pass
+        return val
 
     yaml.add_implicit_resolver('!path', path_matcher)
     yaml.add_constructor('!path', path_constructor)
