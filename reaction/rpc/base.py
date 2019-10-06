@@ -2,7 +2,7 @@ import functools
 import pickle
 from abc import ABC, abstractmethod
 
-from .common import RPCHandler, RPCRequest, RPCResponse
+from .common import RPCHandler, RPCRequest, RPCResponse, read_config
 
 
 class FunctionOrMethod:
@@ -58,3 +58,8 @@ class BaseRPC(ABC):
             call=self.call,
         )
         return self._handler
+
+    @classmethod
+    def configure(cls, filename: str) -> 'BaseRPC':
+        config = read_config(filename)
+        return cls(**config)
