@@ -12,18 +12,28 @@ services:
 
   services:
     build:
-        context: ..
-        dockerfile: example/Dockerfile
+      context: ..
+      dockerfile: example/Dockerfile
     command: python services.py
     depends_on:
       - queue
 
   web:
     build:
-        context: ..
-        dockerfile: example/Dockerfile
+      context: ..
+      dockerfile: example/Dockerfile
     command: uvicorn web:app --host 0.0.0.0
     ports:
       - 8000:8000
+    depends_on:
+      - services
+
+  tgbot:
+    build:
+      context: ..
+      dockerfile: example/Dockerfile
+    environment:
+      TG_TOKEN: ${TG_TOKEN}
+    command: python tgbot.py
     depends_on:
       - services

@@ -57,9 +57,48 @@ if __name__ == '__main__':
 ```
 
 ## Example
-* `cd example && docker-compose up --force-recreate --build`
+* Register telegram bot, achieve token
+* `cd example && TG_TOKEN="telegram bot token goes here" docker-compose up --force-recreate --build`
 * RabbitMQ web ui: http://127.0.0.1:15672/#/
   * user: admin
   * password: j8XfG9ZDT5ZZrWTzw62q
 * Docs (you can submit requests from web ui): http://127.0.0.1:8000/docs#/
 * Redoc: http://127.0.0.1:8000/redoc
+* Telegram bot is ready to classify ants & bees, but you have to send files "as a photo"
+
+## Telegram bot quick howto
+
+Install async telegram client first:
+```bash
+$ pip install aiotg
+```
+
+Then create your bot:
+
+**tgbot.py**
+```python
+from consumer import async_square
+from aiotg import Bot, Chat
+
+bot = Bot(api_token='telegram bot token goes here')
+
+
+@bot.command('/start')
+async def start(chat: Chat, match):
+    return chat.reply('Send me /square command with one float argument')
+
+
+@bot.command(r"/square (.+)")
+async def square_command(chat: Chat, match):
+    val = match.group(1)
+    try:
+        val = float(val)
+        square = await async_square.call(val)
+        resp = f'Square for {val} is {square}'
+    except:
+        resp = 'Invalid number'
+    return chat.reply(resp)
+
+
+bot.run()
+```

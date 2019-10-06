@@ -8,6 +8,7 @@ RUN pip install opencv-python==4.1.1.26
 RUN pip install numpy==1.17.2
 RUN pip install imageio==2.5.0
 RUN pip install catalyst==19.9.3
+RUN pip install aiotg==1.0.0
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
