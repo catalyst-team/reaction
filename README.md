@@ -10,6 +10,12 @@
 **Reaction** is a framework for fast and convenient DL models serving.
 </div>
 
+#### Installation
+
+Common installation:
+```bash
+pip install -U reaction
+```
 
 ## Quick start
 
