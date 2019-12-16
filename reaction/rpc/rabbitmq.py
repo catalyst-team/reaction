@@ -12,6 +12,8 @@ from .common import RPCHandler, RPCRequest, RPCResponse, RPCError
 
 
 class RPC(BaseRPC):
+    HEARTBEAT_INTERVAL = 300
+
     def __init__(
             self,
             url: str = None,
@@ -127,7 +129,10 @@ class RPC(BaseRPC):
         while True:
             try:
                 self._mconn = await aio_pika.connect_robust(
-                    self._url, loop=self._loop)
+                    self._url,
+                    loop=self._loop,
+                    heartbeat_interval=self.HEARTBEAT_INTERVAL,
+                )
                 break
             except ConnectionError:
                 # This case is not handled by aio-pika by some reasons
@@ -160,7 +165,10 @@ class RPC(BaseRPC):
     async def _call(self, msg: RPCRequest) -> RPCResponse:
         if not self._mconn:
             self._mconn = await aio_pika.connect_robust(
-                self._url, loop=self._loop)
+                self._url,
+                loop=self._loop,
+                heartbeat_interval=self.HEARTBEAT_INTERVAL,
+            )
         if not self._mch:
             self._mch: aio_pika.RobustChannel = await self._mconn.channel()
         mq: aio_pika.RobustQueue = await self._mch.declare_queue()
