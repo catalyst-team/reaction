@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 class rpc(RabbitRPC):
-    URL = 'amqp://admin:j8XfG9ZDT5ZZrWTzw62q@queue'
+    URL = "amqp://admin:j8XfG9ZDT5ZZrWTzw62q@queue"
 
 
-app = FastAPI(debug=True, title='Reaction Example', version=__version__)
+app = FastAPI(debug=True, title="Reaction Example", version=__version__)

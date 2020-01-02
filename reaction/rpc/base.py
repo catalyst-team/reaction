@@ -2,6 +2,7 @@ import functools
 import pickle
 from abc import ABC, abstractmethod
 
+from reaction.utils import serialize, deserialize
 from .common import RPCHandler, RPCRequest, RPCResponse, read_config
 
 
@@ -27,19 +28,19 @@ class FunctionOrMethod:
 class BaseRPC(ABC):
     @staticmethod
     def encode_request(val: RPCRequest) -> bytes:
-        return pickle.dumps(val)
+        return serialize(val)
 
     @staticmethod
     def decode_request(val: bytes) -> RPCRequest:
-        return pickle.loads(val)
+        return deserialize(val)
 
     @staticmethod
     def encode_response(val: RPCResponse) -> bytes:
-        return pickle.dumps(val)
+        return serialize(val)
 
     @staticmethod
     def decode_response(val: bytes) -> RPCResponse:
-        return pickle.loads(val)
+        return deserialize(val)
 
     @abstractmethod
     async def consume(self):
@@ -60,6 +61,7 @@ class BaseRPC(ABC):
         return self._handler
 
     @classmethod
-    def configure(cls, filename: str) -> 'BaseRPC':
+    def configure(cls, filename: str) -> "BaseRPC":
         config = read_config(filename)
         return cls(**config)
+

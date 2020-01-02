@@ -2,13 +2,18 @@
 
 ![Reaction logo](https://raw.githubusercontent.com/catalyst-team/catalyst-pics/master/pics/Reaction_Logo.png)
 
+**Convenient DL serving**
+
+[![Pipi version](https://img.shields.io/pypi/v/reaction.svg)](https://pypi.org/project/catalyst/)
+[![PyPI Status](https://pepy.tech/badge/reaction)](https://pepy.tech/project/reaction)
+[![Github contributors](https://img.shields.io/github/contributors/catalyst-team/reaction.svg?logo=github&logoColor=white)](https://github.com/catalyst-team/reaction/graphs/contributors)
+[![License](https://img.shields.io/github/license/catalyst-team/catalyst.svg)](LICENSE)
+
 [![Telegram](https://img.shields.io/badge/news-on%20telegram-blue)](https://t.me/catalyst_team)
 [![Gitter](https://badges.gitter.im/catalyst-team/community.svg)](https://gitter.im/catalyst-team/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Spectrum](https://img.shields.io/badge/chat-on%20spectrum-blueviolet)](https://spectrum.chat/catalyst)
 [![Slack](https://img.shields.io/badge/ODS-slack-red)](https://opendatascience.slack.com/messages/CGK4KQBHD)
 [![Donate](https://raw.githubusercontent.com/catalyst-team/catalyst-pics/master/third_party_pics/patreon.png)](https://www.patreon.com/catalyst_team)
-
-**Reaction** is a framework for fast and convenient DL models serving.
 </div>
 
 #### Installation
@@ -18,7 +23,7 @@ Common installation:
 pip install -U reaction
 ```
 
-## Quick start
+## Getting started
 
 **consumer.py**:
 ```python
@@ -28,7 +33,7 @@ from reaction.rpc import RabbitRPC
 
 
 class rpc(RabbitRPC):
-    URL = 'amqp://user:password@host'
+    URL = "amqp://user:password@host"
 
 
 @rpc()
@@ -42,7 +47,7 @@ async def async_square(*values) -> List[float]:
     return [v ** 2 for v in values]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.create_task(sync_square.consume())
     loop.create_task(async_square.consume())
@@ -54,7 +59,7 @@ if __name__ == '__main__':
 import asyncio
 from consumer import sync_square, async_square
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     x = loop.run_until_complete(sync_square.call(2, 3))
     y = loop.run_until_complete(async_square.call(4, 5, 6))
@@ -87,12 +92,12 @@ Then create your bot:
 from consumer import async_square
 from aiotg import Bot, Chat
 
-bot = Bot(api_token='telegram bot token goes here')
+bot = Bot(api_token="telegram bot token goes here")
 
 
-@bot.command('/start')
+@bot.command("/start")
 async def start(chat: Chat, match):
-    return chat.reply('Send me /square command with one float argument')
+    return chat.reply("Send me /square command with one float argument")
 
 
 @bot.command(r"/square (.+)")
@@ -101,9 +106,9 @@ async def square_command(chat: Chat, match):
     try:
         val = float(val)
         square = await async_square.call(val)
-        resp = f'Square for {val} is {square}'
+        resp = f"Square for {val} is {square}"
     except:
-        resp = 'Invalid number'
+        resp = "Invalid number"
     return chat.reply(resp)
 
 

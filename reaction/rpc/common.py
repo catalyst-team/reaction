@@ -8,8 +8,8 @@ from typing import Callable, TypeVar
 
 import yaml
 
-RPCRequest = TypeVar('RPCRequest')
-RPCResponse = TypeVar('RPCResponse')
+RPCRequest = TypeVar("RPCRequest")
+RPCResponse = TypeVar("RPCResponse")
 RPCHandler = Callable[..., RPCResponse]
 
 
@@ -28,10 +28,10 @@ def read_config(filename: str):
             data = f.read()
     else:
         data = filename
-    path_matcher = re.compile(r'\$\{(.*?)\}')
+    path_matcher = re.compile(r"\$\{(.*?)\}")
 
     def repl(match):
-        args = match.group(1).rsplit(':-', 1) + ['']
+        args = match.group(1).rsplit(":-", 1) + [""]
         name = args[0]
         default = args[1]
         return os.getenv(name, default)
@@ -48,8 +48,8 @@ def read_config(filename: str):
             pass
         return val
 
-    yaml.add_implicit_resolver('!path', path_matcher)
-    yaml.add_constructor('!path', path_constructor)
+    yaml.add_implicit_resolver("!path", path_matcher)
+    yaml.add_constructor("!path", path_constructor)
     config = yaml.load(data, Loader=yaml.Loader)
     logging.debug(json.dumps(config, indent=4))
     return config
