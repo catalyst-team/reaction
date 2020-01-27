@@ -15,7 +15,7 @@ class SquareResult(BaseModel):
 
 class Orientation(Enum):
     portrait = "portrait"
-    album = "album"
+    landscape = "landscape"
 
 
 class ImageResult(BaseModel):
@@ -42,13 +42,13 @@ async def get_image_info(
         image: UploadFile = File(...),
 ):
     img = imageio.imread(await image.read())
-    w, h = (await services.get_shape.call(img))[:2]
-    o = Orientation.album if w > h else Orientation.portrait
+    height, width = (await services.get_shape.call(img))[:2]
+    o = Orientation.landscape if width > height else Orientation.portrait
     return ImageResult(
         label=label,
-        square=w * h,
+        square=width * height,
         orientation=o,
-        shape=(w, h)
+        shape=(width, height)
     )
 
 
