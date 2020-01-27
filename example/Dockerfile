@@ -1,5 +1,8 @@
 FROM pytorch/pytorch:1.2-cuda10.0-cudnn7-runtime
 
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
 RUN apt-get update -y && \
     apt-get install -y libglib2.0-0 libsm6 libxext6 libxrender-dev wget curl
 
@@ -10,8 +13,6 @@ RUN pip install imageio==2.5.0
 RUN pip install catalyst==19.9.3
 RUN pip install aiotg==1.0.0
 
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
 ENV PYTHONPATH=/src
 
 WORKDIR /src
