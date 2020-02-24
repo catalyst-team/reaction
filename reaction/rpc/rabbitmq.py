@@ -1,30 +1,30 @@
 import asyncio
 import inspect
 import logging
-import uuid
 from typing import List
+import uuid
 
 import aio_pika
 import aio_pika.exceptions
 
 from .base import BaseRPC
-from .common import RPCHandler, RPCRequest, RPCResponse, RPCError
+from .common import RPCError, RPCHandler, RPCRequest, RPCResponse
 
 
 class RPC(BaseRPC):
     HEARTBEAT_INTERVAL = 300
 
     def __init__(
-            self,
-            url: str = None,
-            name: str = None,
-            handler: RPCHandler = None,
-            timeout: float = None,
-            pool_size: int = 0,
-            batch_size: int = 0,
-            wait_for_batch: bool = False,
-            max_jobs: int = 0,
-            loop: asyncio.AbstractEventLoop = None,
+        self,
+        url: str = None,
+        name: str = None,
+        handler: RPCHandler = None,
+        timeout: float = None,
+        pool_size: int = 0,
+        batch_size: int = 0,
+        wait_for_batch: bool = False,
+        max_jobs: int = 0,
+        loop: asyncio.AbstractEventLoop = None,
     ):
         self._loop = loop
         self._url = url or self.URL
@@ -82,10 +82,10 @@ class RPC(BaseRPC):
         try:
             reqs = []
             for m in messages:
-                # logging.debug(f'message: correlation_id={m.correlation_id}')
+                # logging.debug(f"message: correlation_id={m.correlation_id}")
                 req: RPCRequest = self.decode_request(m.body)
                 reqs.append(req)
-            # logging.debug(f'handler: {self._handler}')
+            # logging.debug(f"handler: {self._handler}")
             results = self._handler(*reqs)
             if inspect.isawaitable(results):
                 results = await results
@@ -136,7 +136,7 @@ class RPC(BaseRPC):
                 break
             except ConnectionError:
                 # This case is not handled by aio-pika by some reasons
-                logging.warning('wait for queue...')
+                logging.warning("wait for queue...")
                 await asyncio.sleep(1, loop=self._loop)
 
         self._mch = await self._mconn.channel()
@@ -187,9 +187,9 @@ class RPC(BaseRPC):
                 async for message in it:
                     break
             if message.correlation_id != correlation_id:
-                raise ValueError('wrong correlation_id')
+                raise ValueError("wrong correlation_id")
             response: RPCResponse = self.decode_response(message.body)
-            # logging.debug(f'response: {response}')
+            # logging.debug(f"response: {response}")
             if isinstance(response, RPCError):
                 response.reraise()
             return response
