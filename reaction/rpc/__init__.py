@@ -1,1 +1,1 @@
-from .rabbitmq import RPC as RabbitRPC
+from .rabbitmq import RPC as RabbitRPC  # noqa: F401

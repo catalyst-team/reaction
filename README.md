@@ -38,7 +38,7 @@ from reaction.rpc import RabbitRPC
 
 
 class rpc(RabbitRPC):
-    URL = 'amqp://user:password@host'
+    URL = "amqp://user:password@host"
 
 
 @rpc()
@@ -52,7 +52,7 @@ async def async_square(*values) -> List[float]:
     return [v ** 2 for v in values]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.create_task(sync_square.consume())
     loop.create_task(async_square.consume())
@@ -64,7 +64,7 @@ if __name__ == '__main__':
 import asyncio
 from consumer import sync_square, async_square
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     x = loop.run_until_complete(sync_square.call(2, 3))
     y = loop.run_until_complete(async_square.call(4, 5, 6))
@@ -97,12 +97,12 @@ Then create your bot:
 from consumer import async_square
 from aiotg import Bot, Chat
 
-bot = Bot(api_token='telegram bot token goes here')
+bot = Bot(api_token="telegram bot token goes here")
 
 
-@bot.command('/start')
+@bot.command("/start")
 async def start(chat: Chat, match):
-    return chat.reply('Send me /square command with one float argument')
+    return chat.reply("Send me /square command with one float argument")
 
 
 @bot.command(r"/square (.+)")
@@ -111,9 +111,9 @@ async def square_command(chat: Chat, match):
     try:
         val = float(val)
         square = await async_square.call(val)
-        resp = f'Square for {val} is {square}'
+        resp = f"Square for {val} is {square}"
     except:
-        resp = 'Invalid number'
+        resp = "Invalid number"
     return chat.reply(resp)
 
 

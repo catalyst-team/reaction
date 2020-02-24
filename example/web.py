@@ -1,12 +1,11 @@
 from enum import Enum
 from typing import Tuple
 
-import imageio
-from fastapi import File, UploadFile
-from pydantic import BaseModel
-
-import services
 from common import app
+from fastapi import File, UploadFile
+import imageio
+from pydantic import BaseModel
+import services
 
 
 class SquareResult(BaseModel):
@@ -31,15 +30,13 @@ class ClassifyModelResult(BaseModel):
 
 @app.get("/square/{value}", response_model=SquareResult)
 async def get_square(value: float):
-    return SquareResult(
-        result=await services.get_square.call(value)
-    )
+    return SquareResult(result=await services.get_square.call(value))
 
 
 @app.post("/image_info", response_model=ImageResult)
 async def get_image_info(
-        label: str,
-        image: UploadFile = File(...),
+    label: str,
+    image: UploadFile = File(...),
 ):
     img = imageio.imread(await image.read())
     height, width = (await services.get_shape.call(img))[:2]

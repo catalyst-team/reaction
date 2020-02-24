@@ -4,16 +4,15 @@
 # Note: To use the "upload" functionality of this file, you must:
 #   $ pip install twine
 
-import io
 import os
-import sys
 from shutil import rmtree
+import sys
 
-from setuptools import find_packages, setup, Command
+from setuptools import Command, find_packages, setup
 
 # Package meta-data.
 NAME = "reaction"
-DESCRIPTION = "Reaction. ML serving & microservices."
+DESCRIPTION = "Reaction. Convenient DL serving."
 URL = "https://github.com/catalyst-team/reaction"
 EMAIL = "dkuryakin@gmail.com"
 AUTHOR = "David Kuryakin"
@@ -66,7 +65,9 @@ class UploadCommand(Command):
 
         self.status("Building Source and Wheel (universal) distribution…")
         os.system(
-            "{0} setup.py sdist bdist_wheel --universal".format(sys.executable)
+            "{0} setup.py sdist bdist_wheel --universal".format(
+                sys.executable
+            )
         )
 
         self.status("Uploading the package to PyPI via Twine…")
@@ -94,19 +95,32 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(exclude=("tests",)),
-    install_requires=load_requirements("./requirements.txt"),
+    download_url=URL,
+    project_urls={
+        "Bug Tracker": "https://github.com/catalyst-team/reaction/issues",
+        "Documentation": "https://catalyst-team.github.io/reaction",
+        "Source Code": "https://github.com/catalyst-team/reaction",
+    },
+    packages=find_packages(exclude=("tests", )),
+    install_requires=load_requirements("requirements/requirements.txt"),
     include_package_data=True,
     license="Apache License 2.0",
     classifiers=[
+        "Environment :: Console",
+        "Natural Language :: English",
+        "Development Status :: 4 - Beta",
+        "Operating System :: OS Independent",
         "License :: OSI Approved :: Apache Software License",
+        # Audience
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
+        # Topics
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        # Programming
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: Implementation :: CPython",
-        "Topic :: Scientific/Engineering :: Artificial Intelligence"
     ],
     # $ setup.py publish support.
     cmdclass={
