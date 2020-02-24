@@ -4,7 +4,7 @@
 
 **Convenient DL serving**
 
-[![Build Status](https://travis-ci.com/catalyst-team/reaction.svg?branch=master)](https://travis-ci.com/catalyst-team/reaction)
+![Build Status](https://github.com/catalyst-team/reaction/workflows/CI/badge.svg)
 [![CodeFactor](https://www.codefactor.io/repository/github/catalyst-team/reaction/badge)](https://www.codefactor.io/repository/github/catalyst-team/reaction)
 [![Pipi version](https://img.shields.io/pypi/v/reaction.svg)](https://pypi.org/project/reaction/)
 [![Docs](https://img.shields.io/badge/dynamic/json.svg?label=docs&url=https%3A%2F%2Fpypi.org%2Fpypi%2Freaction%2Fjson&query=%24.info.version&colorB=brightgreen&prefix=v)](https://catalyst-team.github.io/reaction/index.html)
