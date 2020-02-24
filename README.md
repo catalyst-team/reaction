@@ -5,15 +5,15 @@
 **Convenient DL serving**
 
 [![Build Status](https://travis-ci.com/catalyst-team/reaction.svg?branch=master)](https://travis-ci.com/catalyst-team/reaction)
+[![CodeFactor](https://www.codefactor.io/repository/github/catalyst-team/reaction/badge)](https://www.codefactor.io/repository/github/catalyst-team/reaction)
 [![Pipi version](https://img.shields.io/pypi/v/reaction.svg)](https://pypi.org/project/reaction/)
 [![Docs](https://img.shields.io/badge/dynamic/json.svg?label=docs&url=https%3A%2F%2Fpypi.org%2Fpypi%2Freaction%2Fjson&query=%24.info.version&colorB=brightgreen&prefix=v)](https://catalyst-team.github.io/reaction/index.html)
 [![PyPI Status](https://pepy.tech/badge/reaction)](https://pepy.tech/project/reaction)
-[![Github contributors](https://img.shields.io/github/contributors/catalyst-team/reaction.svg?logo=github&logoColor=white)](https://github.com/catalyst-team/reaction/graphs/contributors)
 
-[![Twitter](https://img.shields.io/badge/news-on%20twitter-499feb)](https://t.me/catalyst_team)
+[![Twitter](https://img.shields.io/badge/news-on%20twitter-499feb)](https://twitter.com/catalyst_core)
 [![Telegram](https://img.shields.io/badge/channel-on%20telegram-blue)](https://t.me/catalyst_team)
-[![Spectrum](https://img.shields.io/badge/chat-on%20spectrum-blueviolet)](https://spectrum.chat/catalyst)
 [![Slack](https://img.shields.io/badge/ODS-slack-red)](https://opendatascience.slack.com/messages/CGK4KQBHD)
+[![Github contributors](https://img.shields.io/github/contributors/catalyst-team/reaction.svg?logo=github&logoColor=white)](https://github.com/catalyst-team/reaction/graphs/contributors)
 
 </div>
 
