@@ -1,8 +1,8 @@
+from typing import Any, List
 import asyncio
 import json
 import logging
 import os
-from typing import Any, List
 
 from albumentations import Compose, LongestMaxSize, Normalize, PadIfNeeded
 from albumentations.torch import ToTensor

@@ -53,9 +53,7 @@ class BaseRPC(ABC):
         if self._name is None:
             self._name = handler.__name__
         self._handler = FunctionOrMethod(
-            handler,
-            consume=self.consume,
-            call=self.call,
+            handler, consume=self.consume, call=self.call,
         )
         return self._handler
 

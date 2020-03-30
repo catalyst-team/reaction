@@ -1,7 +1,6 @@
 import logging
 
 from fastapi import FastAPI
-
 from reaction.__version__ import __version__
 from reaction.rpc import RabbitRPC
 
