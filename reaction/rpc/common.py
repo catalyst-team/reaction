@@ -1,10 +1,10 @@
+from typing import Callable, TypeVar
 import json
 import logging
 import os
 import re
 import sys
 import traceback
-from typing import Callable, TypeVar
 
 import yaml
 

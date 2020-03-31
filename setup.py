@@ -65,9 +65,7 @@ class UploadCommand(Command):
 
         self.status("Building Source and Wheel (universal) distribution…")
         os.system(
-            "{0} setup.py sdist bdist_wheel --universal".format(
-                sys.executable
-            )
+            "{0} setup.py sdist bdist_wheel --universal".format(sys.executable)
         )
 
         self.status("Uploading the package to PyPI via Twine…")
@@ -86,11 +84,7 @@ setup(
     description=DESCRIPTION,
     long_description=load_readme(),
     long_description_content_type="text/markdown",
-    keywords=[
-        "Machine Learning",
-        "Deep Learning",
-        "PyTorch",
-    ],
+    keywords=["Machine Learning", "Deep Learning", "PyTorch"],
     author=AUTHOR,
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
@@ -101,7 +95,7 @@ setup(
         "Documentation": "https://catalyst-team.github.io/reaction",
         "Source Code": "https://github.com/catalyst-team/reaction",
     },
-    packages=find_packages(exclude=("tests", )),
+    packages=find_packages(exclude=("tests",)),
     install_requires=load_requirements("requirements/requirements.txt"),
     include_package_data=True,
     license="Apache License 2.0",
@@ -123,7 +117,5 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
     ],
     # $ setup.py publish support.
-    cmdclass={
-        "upload": UploadCommand,
-    },
+    cmdclass={"upload": UploadCommand},
 )

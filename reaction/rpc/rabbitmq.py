@@ -1,7 +1,7 @@
+from typing import List
 import asyncio
 import inspect
 import logging
-from typing import List
 import uuid
 
 import aio_pika
@@ -61,8 +61,7 @@ class RPC(BaseRPC):
                     batch.append(q.get_nowait())
             await asyncio.wait_for(
                 asyncio.ensure_future(
-                    self._process_batch(batch),
-                    loop=self._loop,
+                    self._process_batch(batch), loop=self._loop,
                 ),
                 self._timeout,
                 loop=self._loop,
@@ -71,8 +70,7 @@ class RPC(BaseRPC):
     async def _process_single(self, message: aio_pika.IncomingMessage):
         return await asyncio.wait_for(
             asyncio.ensure_future(
-                self._process_batch([message]),
-                loop=self._loop,
+                self._process_batch([message]), loop=self._loop,
             ),
             self._timeout,
             loop=self._loop,
@@ -103,8 +101,7 @@ class RPC(BaseRPC):
                 for m in messages:
                     await asyncio.wait_for(
                         asyncio.ensure_future(
-                            self._process_batch([m]),
-                            loop=self._loop,
+                            self._process_batch([m]), loop=self._loop,
                         ),
                         self._timeout,
                         loop=self._loop,
@@ -118,9 +115,7 @@ class RPC(BaseRPC):
                 delivery_mode=message.delivery_mode,
             )
             await self._mch.default_exchange.publish(
-                result,
-                routing_key=message.reply_to,
-                mandatory=False,
+                result, routing_key=message.reply_to, mandatory=False,
             )
             if not message.processed:
                 await message.ack()
@@ -154,10 +149,7 @@ class RPC(BaseRPC):
 
     async def call(self, msg: RPCRequest) -> RPCResponse:
         return await asyncio.wait_for(
-            asyncio.ensure_future(
-                self._call(msg),
-                loop=self._loop,
-            ),
+            asyncio.ensure_future(self._call(msg), loop=self._loop,),
             self._timeout,
             loop=self._loop,
         )
@@ -180,8 +172,7 @@ class RPC(BaseRPC):
                 reply_to=mq.name,
             )
             await self._mch.default_exchange.publish(
-                message,
-                routing_key=self._name,
+                message, routing_key=self._name,
             )
             async with mq.iterator(no_ack=True) as it:
                 async for message in it:
