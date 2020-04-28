@@ -1,8 +1,9 @@
-from typing import List
 import asyncio
 import inspect
 import logging
 import uuid
+from multiprocessing import Value
+from typing import List
 
 import aio_pika
 import aio_pika.exceptions
@@ -13,18 +14,22 @@ from .common import RPCError, RPCHandler, RPCRequest, RPCResponse
 
 class RPC(BaseRPC):
     HEARTBEAT_INTERVAL = 300
+    _counter: Value = Value('i', 0)
+    _calls: Value = Value('i', 0)
+    _consuming: Value = Value('b', False)
 
     def __init__(
-        self,
-        url: str = None,
-        name: str = None,
-        handler: RPCHandler = None,
-        timeout: float = None,
-        pool_size: int = 0,
-        batch_size: int = 0,
-        wait_for_batch: bool = False,
-        max_jobs: int = 0,
-        loop: asyncio.AbstractEventLoop = None,
+            self,
+            url: str = None,
+            name: str = None,
+            handler: RPCHandler = None,
+            timeout: float = None,
+            pool_size: int = 0,
+            batch_size: int = 0,
+            wait_for_batch: bool = False,
+            max_jobs: int = 0,
+            jobs_before_die: int = 0,
+            loop: asyncio.AbstractEventLoop = None,
     ):
         self._loop = loop
         self._url = url or self.URL
@@ -35,27 +40,42 @@ class RPC(BaseRPC):
         self._batch_size = batch_size
         self._wait_for_batch = wait_for_batch
         self._max_jobs = max_jobs
+        self._jobs_before_die = jobs_before_die
         self._mconn: aio_pika.RobustConnection = None
         self._mch: aio_pika.RobustChannel = None
         self._mq: aio_pika.RobustQueue = None
-        self._queue = asyncio.Queue(loop=loop)
-        self._pool = []
-        self._consuming = False
+        self._queue: asyncio.Queue = asyncio.Queue(loop=self._loop)
+        self._pool: List[asyncio.Task] = []
+        self._consumer_tag: str = None
 
     async def _run_pool(self):
-        self._pool = [self._run_worker() for _ in range(self._pool_size)]
-        self._consuming = True
+        loop = self._loop or asyncio.get_event_loop()
+        self._pool = [loop.create_task(self._run_worker()) for _ in range(self._pool_size)]
         await asyncio.gather(*self._pool, loop=self._loop)
         self._pool = []
 
     async def _run_worker(self):
         bs = self._batch_size
         q = self._queue
-        while self._consuming:
-            batch = [await q.get()]
+        while True:
+            if q.empty():
+                with self._consuming.get_lock():
+                    if self._consuming.value:
+                        await asyncio.sleep(0.1, loop=self._loop)
+                        continue
+                    else:
+                        break
+            batch = [q.get_nowait()]
             if self._wait_for_batch and bs > 0:
                 while len(batch) < bs:
-                    batch.append(await q.get())
+                    if q.empty():
+                        with self._consuming.get_lock():
+                            if self._consuming.value:
+                                await asyncio.sleep(0.1, loop=self._loop)
+                                continue
+                            else:
+                                break
+                    batch.append(q.get_nowait())
             else:
                 while (bs <= 0 or len(batch) < bs) and not q.empty():
                     batch.append(q.get_nowait())
@@ -66,6 +86,28 @@ class RPC(BaseRPC):
                 self._timeout,
                 loop=self._loop,
             )
+
+    async def _autoclose(self):
+        while True:
+            with self._consuming.get_lock():
+                if not self._consuming.value:
+                    await self._mq.cancel(self._consumer_tag)
+                    break
+            await asyncio.sleep(0.1, loop=self._loop)
+
+    async def _wait(self):
+        while True:
+            with self._consuming.get_lock():
+                if not self._consuming.value:
+                    break
+            await asyncio.sleep(5, loop=self._loop)
+        while not self._queue.empty():
+            await asyncio.sleep(5, loop=self._loop)
+        while True:
+            with self._calls.get_lock():
+                if self._calls.value == 0:
+                    break
+            await asyncio.sleep(5, loop=self._loop)
 
     async def _process_single(self, message: aio_pika.IncomingMessage):
         return await asyncio.wait_for(
@@ -88,7 +130,8 @@ class RPC(BaseRPC):
             if inspect.isawaitable(results):
                 results = await results
         except KeyboardInterrupt:
-            self._consuming = False
+            with self._consuming.get_lock():
+                self._consuming.value = False
             for m in messages:
                 await m.reject(requeue=True)
             return
@@ -120,6 +163,14 @@ class RPC(BaseRPC):
             if not message.processed:
                 await message.ack()
 
+        if self._jobs_before_die:
+            with self._counter.get_lock():
+                self._counter.value += len(messages)
+                value = self._counter.value
+            if value >= self._jobs_before_die:
+                with self._consuming.get_lock():
+                    self._consuming.value = False
+
     async def consume(self):
         while True:
             try:
@@ -134,25 +185,46 @@ class RPC(BaseRPC):
                 logging.warning("wait for queue...")
                 await asyncio.sleep(1, loop=self._loop)
 
+        with self._consuming.get_lock():
+            self._consuming.value = True
         self._mch = await self._mconn.channel()
-        await self._mch.set_qos(prefetch_count=self._max_jobs)
-        self._mq = await self._mch.declare_queue(self._name)
-        if self._pool_size > 0:
-            await asyncio.gather(
-                self._run_pool(),
-                self._mq.consume(self._queue.put),
-                loop=self._loop,
-            )
+
+        if self._jobs_before_die:
+            if self._max_jobs:
+                max_jobs = min(self._max_jobs, self._jobs_before_die)
+            else:
+                max_jobs = self._jobs_before_die
         else:
-            await self._mq.consume(self._process_single)
+            max_jobs = self._max_jobs
+        await self._mch.set_qos(prefetch_count=max_jobs)
+
+        self._mq = await self._mch.declare_queue(self._name)
+
+        loop = self._loop or asyncio.get_event_loop()
+        loop.create_task(self._autoclose())
+
+        if self._pool_size > 0:
+            self._consumer_tag = await self._mq.consume(self._queue.put)
+            await self._run_pool()
+        else:
+            self._consumer_tag = await self._mq.consume(self._process_single)
+
+        await self._wait()
         return self._mconn
 
     async def call(self, msg: RPCRequest) -> RPCResponse:
-        return await asyncio.wait_for(
-            asyncio.ensure_future(self._call(msg), loop=self._loop,),
-            self._timeout,
-            loop=self._loop,
-        )
+        try:
+            with self._calls.get_lock():
+                self._calls.value += 1
+            loop = self._loop or asyncio.get_event_loop()
+            return await asyncio.wait_for(
+                loop.create_task(self._call(msg)),
+                self._timeout,
+                loop=self._loop,
+            )
+        finally:
+            with self._calls.get_lock():
+                self._calls.value -= 1
 
     async def _call(self, msg: RPCRequest) -> RPCResponse:
         if not self._mconn:
