@@ -100,14 +100,14 @@ class RPC(BaseRPC):
             with self._consuming.get_lock():
                 if not self._consuming.value:
                     break
-            await asyncio.sleep(5, loop=self._loop)
+            await asyncio.sleep(0.1, loop=self._loop)
         while not self._queue.empty():
-            await asyncio.sleep(5, loop=self._loop)
+            await asyncio.sleep(0.1, loop=self._loop)
         while True:
             with self._calls.get_lock():
                 if self._calls.value == 0:
                     break
-            await asyncio.sleep(5, loop=self._loop)
+            await asyncio.sleep(0.1, loop=self._loop)
 
     async def _process_single(self, message: aio_pika.IncomingMessage):
         return await asyncio.wait_for(
