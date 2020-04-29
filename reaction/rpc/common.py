@@ -40,11 +40,11 @@ def read_config(filename: str):
         val = path_matcher.sub(repl, node.value)
         try:
             return int(val)
-        except Exception():
+        except:
             pass
         try:
             return float(val)
-        except Exception():
+        except:
             pass
         return val
 
