@@ -48,6 +48,10 @@ class RPC(BaseRPC):
         self._pool: List[asyncio.Task] = []
         self._consumer_tag: str = None
 
+    async def close(self):
+        await self._mch.close()
+        await self._mconn.close()
+
     async def _run_pool(self):
         loop = self._loop or asyncio.get_event_loop()
         self._pool = [loop.create_task(self._run_worker()) for _ in range(self._pool_size)]
