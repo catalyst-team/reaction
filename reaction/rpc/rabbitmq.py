@@ -60,12 +60,12 @@ class RPC(BaseRPC):
 
     async def close(self):
         try:
-            if self._mch:
+            if self._mch and not self._mch.is_closed:
                 await self._mch.close()
         finally:
             self._mch = None
         try:
-            if self._mconn:
+            if self._mconn and not self._mconn.is_closed:
                 await self._mconn.close()
         finally:
             self._mch = None
