@@ -59,8 +59,16 @@ class RPC(BaseRPC):
         await asyncio.gather(*tasks)
 
     async def close(self):
-        await self._mch.close()
-        await self._mconn.close()
+        try:
+            if self._mch:
+                await self._mch.close()
+        finally:
+            self._mch = None
+        try:
+            if self._mconn:
+                await self._mconn.close()
+        finally:
+            self._mch = None
 
     async def _run_pool(self):
         loop = self._loop or asyncio.get_event_loop()
