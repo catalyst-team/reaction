@@ -17,6 +17,7 @@ class RPC(BaseRPC):
     _counter: Value = Value('i', 0)
     _calls: Value = Value('i', 0)
     _consuming: Value = Value('b', False)
+    _instances = []
 
     def __init__(
             self,
@@ -47,6 +48,15 @@ class RPC(BaseRPC):
         self._queue: asyncio.Queue = asyncio.Queue(loop=self._loop)
         self._pool: List[asyncio.Task] = []
         self._consumer_tag: str = None
+        self._instances.append(self)
+
+    def __del__(self):
+        self._instances.remove(self)
+
+    @classmethod
+    async def close_all(cls):
+        tasks = [i.close() for i in cls._instances]
+        await asyncio.gather(*tasks)
 
     async def close(self):
         await self._mch.close()
