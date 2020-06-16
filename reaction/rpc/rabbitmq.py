@@ -13,7 +13,7 @@ from .common import RPCError, RPCHandler, RPCRequest, RPCResponse
 
 
 class RPC(BaseRPC):
-    HEARTBEAT_INTERVAL = 300
+    HEARTBEAT_INTERVAL = 30
     _counter: Value = Value('i', 0)
     _calls: Value = Value('i', 0)
     _consuming: Value = Value('b', False)
