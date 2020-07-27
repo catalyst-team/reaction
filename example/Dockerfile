@@ -17,8 +17,8 @@ ENV PYTHONPATH=/src
 
 WORKDIR /src
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+COPY requirements/requirements.txt .
+RUN pip install -r requirements.txt --ignore-installed PyYAML
 
 RUN wget https://www.dropbox.com/s/sl0fbzeo2fgbmum/classifier-190915.tar && \
     tar -xvf classifier-190915.tar && \
