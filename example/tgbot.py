@@ -26,7 +26,7 @@ async def process_image(binary_data, chat_to_reply: Chat):
 
     # Or image response
     with open(f"{tag}.jpg", "rb") as f:
-        await chat_to_reply.send_photo(f, caption=f"... the {tag} like this one!")
+        await chat_to_reply.send_photo(f, caption=f"The {tag} like this one!")
 
 
 @bot.handle("photo")
