@@ -84,7 +84,7 @@ if __name__ == "__main__":
   * password: j8XfG9ZDT5ZZrWTzw62q
 * Docs (you can submit requests from web ui): http://127.0.0.1:8000/docs#/
 * Redoc: http://127.0.0.1:8000/redoc
-* Telegram bot is ready to classify ants & bees, but you have to send files "as a photo"
+* Telegram bot is ready to classify ants & bees, you have to send files "as a photo" or "as a file"
 
 ## Telegram bot quick howto
 
